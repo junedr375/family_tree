@@ -12,9 +12,28 @@ const CrownIcon = () => (
 const CustomNode = ({ data }) => {
   const isFamilyHead = data.nodeType === NODE_TYPE.ROOT;
   
+  let cardBgColor = '#fff'; // Default white background
+  if (data.nodeType === NODE_TYPE.SPOUSE) {
+    cardBgColor = 'lightyellow'; // Yellowish background for spouse
+  } else if (data.nodeType === NODE_TYPE.CHILD) {
+    if (data.gender === GENDER.MALE) {
+      cardBgColor = 'lightblue'; // Bluish background for son
+    } else if (data.gender === GENDER.FEMALE) {
+      cardBgColor = 'lightgreen'; // Greenish background for daughter
+    } else if (data.nodeType === NODE_TYPE.ROOT) {
+        cardBgColor = 'lightgray'; // Grayish background for Family Head
+    }
+  }
+
+  const cardStyle = {
+    width: data.nodeType === NODE_TYPE.SPOUSE ? '200px' : '150px',
+    position: 'relative',
+    backgroundColor: cardBgColor, // Apply background color
+  };
+
   if (data.nodeType === NODE_TYPE.SPOUSE) {
     return (
-      <Card style={{ width: '200px', position: 'relative' }}>
+      <Card style={cardStyle}>
         <Card.Body className="d-flex align-items-center p-2">
           <Image src={data.imageUrl || (data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '40px', height: '40px', marginRight: '10px'}} />
           <Card.Title style={{fontSize: '1rem', marginBottom: '0'}}>{data.name}</Card.Title>
@@ -26,7 +45,7 @@ const CustomNode = ({ data }) => {
   }
 
   return (
-    <Card style={{ width: '150px', position: 'relative' }}>
+    <Card style={cardStyle}>
         {isFamilyHead && <CrownIcon />}
         {data.childOrder && <Badge pill bg="info" style={{ position: 'absolute', top: '5px', left: '5px' }}>{data.childOrder}</Badge>}
         <Card.Body className="text-center">
