@@ -90,45 +90,65 @@ const App = () => {
         return;
       }
 
-      // Validation
-      if (sourceNode.data.nodeType !== NODE_TYPE.SPOUSE) {
-        alert("Only spouse nodes can be parents.");
+      // Prevent duplicate edges
+      const edgeExists = edges.some(e =>
+        (e.source === connection.source && e.target === connection.target) ||
+        (e.source === connection.target && e.target === connection.source)
+      );
+      if (edgeExists) {
+        alert("A connection already exists between these two nodes.");
         return;
       }
-      if (targetNode.data.nodeType !== NODE_TYPE.CHILD) {
-        alert("Only child nodes can be linked as children.");
+
+      let updatedNodes = [...nodes];
+      let updatedEdges = [...edges];
+
+      if (sourceNode.data.nodeType === NODE_TYPE.SPOUSE && targetNode.data.nodeType === NODE_TYPE.CHILD) {
+        // Existing logic for Spouse to Child
+        if (targetNode.data.parentId) {
+          const oldParent = nodes.find(n => n.id === targetNode.data.parentId);
+          if (oldParent) {
+            // Remove child from old parent's childIds
+            updatedNodes = updatedNodes.map(n => {
+              if (n.id === oldParent.id) {
+                return { ...n, data: { ...n.data, childIds: n.data.childIds.filter(id => id !== targetNode.id) } };
+              }
+              return n;
+            });
+            // Remove old edge
+            updatedEdges = updatedEdges.filter(e => !(e.source === oldParent.id && e.target === targetNode.id));
+          }
+        }
+
+        // Update data model for new parent
+        updatedNodes = updatedNodes.map(n => {
+          if (n.id === targetNode.id) {
+            return { ...n, data: { ...n.data, parentId: sourceNode.id } };
+          }
+          if (n.id === sourceNode.id) {
+            return { ...n, data: { ...n.data, childIds: [...n.data.childIds, targetNode.id] } };
+          }
+          return n;
+        });
+      } else if (sourceNode.data.nodeType === NODE_TYPE.CHILD && targetNode.data.nodeType === NODE_TYPE.SPOUSE) {
+        // New logic for Child to Spouse
+        // The child node becomes the parent of the spouse node's children
+        updatedNodes = updatedNodes.map(n => {
+          if (n.id === targetNode.id) {
+            // Set the spouse's parentId to the child's ID
+            return { ...n, data: { ...n.data, parentId: sourceNode.id } };
+          }
+          if (n.id === sourceNode.id) {
+            // Add spouse's children to child's children
+            const newChildIds = [...new Set([...n.data.childIds, ...targetNode.data.childIds])];
+            return { ...n, data: { ...n.data, childIds: newChildIds } };
+          }
+          return n;
+        });
+      } else {
+        alert("Invalid connection: Only Spouse to Child or Child to Spouse connections are allowed.");
         return;
       }
-
-      // Handle existing parent
-      let updatedNodes = nodes;
-      let updatedEdges = edges;
-
-      if (targetNode.data.parentId) {
-        const oldParent = nodes.find(n => n.id === targetNode.data.parentId);
-        if (oldParent) {
-          // Remove child from old parent's childIds
-          updatedNodes = updatedNodes.map(n => {
-            if (n.id === oldParent.id) {
-              return { ...n, data: { ...n.data, childIds: n.data.childIds.filter(id => id !== targetNode.id) } };
-            }
-            return n;
-          });
-          // Remove old edge
-          updatedEdges = updatedEdges.filter(e => !(e.source === oldParent.id && e.target === targetNode.id));
-        }
-      }
-
-      // Update data model for new parent
-      updatedNodes = updatedNodes.map(n => {
-        if (n.id === targetNode.id) {
-          return { ...n, data: { ...n.data, parentId: sourceNode.id } };
-        }
-        if (n.id === sourceNode.id) {
-          return { ...n, data: { ...n.data, childIds: [...n.data.childIds, targetNode.id] } };
-        }
-        return n;
-      });
 
       // Add the new edge
       updatedEdges = addEdge({ ...connection, type: 'straight' }, updatedEdges);

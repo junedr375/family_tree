@@ -1,13 +1,12 @@
 
 import dagre from 'dagre';
 
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
 const nodeWidth = 200; // Approximate width of a node
 const nodeHeight = 180; // Approximate height of a node
 
 export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({ rankdir: direction });
 
   nodes.forEach((node) => {
