@@ -9,7 +9,20 @@ const CrownIcon = () => (
 );
 
 const CustomNode = ({ data }) => {
-  const isFamilyHead = data.parentId === null;
+  const isFamilyHead = data.nodeType === 'root';
+  
+  if (data.nodeType === 'spouse') {
+    return (
+      <Card style={{ width: '200px', position: 'relative' }}>
+        <Card.Body className="d-flex align-items-center p-2">
+          <Image src={data.imageUrl || 'https://avatar.iran.liara.run/public/girl'} roundedCircle style={{width: '40px', height: '40px', marginRight: '10px'}} />
+          <Card.Title style={{fontSize: '1rem', marginBottom: '0'}}>{data.name}</Card.Title>
+        </Card.Body>
+        <Handle type="target" position={Position.Top} />
+        <Handle type="source" position={Position.Bottom} />
+      </Card>
+    );
+  }
 
   return (
     <Card style={{ width: '150px', position: 'relative' }}>
@@ -19,10 +32,8 @@ const CustomNode = ({ data }) => {
             <Image src={data.imageUrl || (data.gender === 'male' ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '50px', height: '50px'}} className="mb-2" />
             <Card.Title style={{fontSize: '1rem'}}>{data.name}</Card.Title>
         </Card.Body>
-      <Handle type="target" position={Position.Top} id="top-target" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" />
-      <Handle type="target" position={Position.Left} id="left-target" />
-      <Handle type="source" position={Position.Right} id="right-source" />
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
     </Card>
   );
 };

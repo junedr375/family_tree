@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   addEdge,
   applyEdgeChanges,
@@ -14,7 +14,7 @@ import { CSVLink } from "react-csv";
 
 const App = () => {
   const [nodes, setNodes] = useState([
-    { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', spouseIds: [], childIds: [], gender: 'male', parentId: null }, position: { x: 250, y: 5 } }
+    { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', gender: 'male', nodeType: 'root' }, position: { x: 250, y: 5 } }
   ]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -48,63 +48,63 @@ const App = () => {
     if (!parentNode) return;
 
     const newNodeId = uuidv4();
-    const genderName = gender === 'male' ? 'Son' : (gender === 'female' ? 'Daughter' : 'Spouse');
-    const childCount = parentNode.data.childIds.length;
+    const genderName = type === 'spouse' ? 'Spouse' : (gender === 'male' ? 'Son' : 'Daughter');
+    
+    let newNode;
+    if (type === 'spouse') {
+        newNode = {
+            id: newNodeId,
+            type: 'custom',
+            data: { 
+                name: `New ${genderName}`,
+                imageUrl: '',
+                gender: gender,
+                nodeType: 'spouse',
+                childIds: []
+            },
+            position: {
+                x: parentNode.position.x,
+                y: parentNode.position.y + 150,
+            },
+        };
+    } else { // child
+        const childCount = parentNode.data.childIds.length;
+        newNode = {
+            id: newNodeId,
+            type: 'custom',
+            data: { 
+                name: `New ${genderName}`,
+                imageUrl: '',
+                gender: gender,
+                nodeType: 'child',
+                childOrder: childCount + 1,
+                parentId: parentNode.id
+            },
+            position: {
+                x: parentNode.position.x + (childCount * 150),
+                y: parentNode.position.y + 150,
+            },
+        };
+    }
 
-    const newNode = {
-      id: newNodeId,
-      type: 'custom',
-      data: { 
-          name: `New ${genderName}`,
-          imageUrl: '', 
-          spouseIds: type === 'spouse' ? [parentNode.id] : [], 
-          childIds: [], 
-          gender: gender, 
-          childOrder: type === 'child' ? childCount + 1 : null,
-          parentId: type === 'child' ? parentNode.id : null
-        },
-      position: {
-        x: parentNode.position.x + (type === 'spouse' ? 250 : 0),
-        y: parentNode.position.y + (type === 'spouse' ? 0 : 150),
-      },
-    };
+    setNodes(nds => nds.concat(newNode));
 
-    setNodes(nds => {
-        const newNodes = nds.map(n => {
+    if (type === 'child') {
+        setNodes(nds => nds.map(n => {
             if (n.id === parentNode.id) {
-                if (type === 'child') {
-                    return {...n, data: {...n.data, childIds: [...n.data.childIds, newNodeId]}};
-                }
-                if (type === 'spouse') {
-                    return {...n, data: {...n.data, spouseIds: [...n.data.spouseIds, newNodeId]}};
-                }
+                return { ...n, data: { ...n.data, childIds: [...n.data.childIds, newNodeId] } };
             }
             return n;
-        });
-        return [...newNodes, newNode];
-    });
+        }));
+    }
 
-    let newEdge;
-    if (type === 'spouse') {
-      newEdge = {
+    const newEdge = {
         id: `${parentNode.id}-${newNodeId}`,
         source: parentNode.id,
         target: newNodeId,
         type: 'smoothstep',
-        sourceHandle: 'right-source',
-        targetHandle: 'left-target',
-      };
-    } else { // child
-        newEdge = {
-            id: `${parentNode.id}-${newNodeId}`,
-            source: parentNode.id,
-            target: newNodeId,
-            type: 'smoothstep',
-            sourceHandle: 'bottom-source',
-            targetHandle: 'top-target',
-          };
-    }
-    setEdges((eds) => [...eds, newEdge]);
+    };
+    setEdges((eds) => eds.concat(newEdge));
   };
 
   const updateNodeData = (nodeId, data) => {
@@ -127,7 +127,7 @@ const App = () => {
     const nodeToDelete = nodes.find(n => n.id === nodeId);
     if (!nodeToDelete) return;
 
-    if (nodeToDelete.data.parentId === null) {
+    if (nodeToDelete.data.nodeType === 'root') {
         alert('The Family Head cannot be deleted.');
         return;
     }
@@ -139,14 +139,7 @@ const App = () => {
         const nodeChange = {type: 'remove', id: nodeId};
         onNodesChange([nodeChange]);
 
-        setNodes(nds => nds.map(n => ({
-            ...n,
-            data: {
-                ...n.data,
-                spouseIds: n.data.spouseIds.filter(id => id !== nodeId),
-                childIds: n.data.childIds.filter(id => id !== nodeId),
-            }
-        })));
+        setNodes(nds => nds.filter(n => n.id !== nodeId));
 
         setSelectedNode(null);
     }
@@ -157,58 +150,16 @@ const App = () => {
         id: node.id,
         name: node.data.name,
         imageUrl: node.data.imageUrl,
-        spouseIds: node.data.spouseIds.join(';'),
-        childIds: node.data.childIds.join(';'),
-        x: node.position.x,
-        y: node.position.y,
         gender: node.data.gender,
+        nodeType: node.data.nodeType,
         childOrder: node.data.childOrder,
-        parentId: node.data.parentId
+        parentId: node.data.parentId,
+        childIds: node.data.childIds ? node.data.childIds.join(';') : ''
     }));
   }
 
   const importCSV = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const text = event.target.result;
-        const lines = text.split('\n').filter(l => l.trim() !== '');
-        const headers = lines[0].split(',');
-        const newNodes = lines.slice(1).map(line => {
-            const values = line.split(',');
-            const node = {
-                id: values[0],
-                type: 'custom',
-                position: {x: parseFloat(values[5]), y: parseFloat(values[6])},
-                data: {
-                    name: values[1],
-                    imageUrl: values[2],
-                    spouseIds: values[3] ? values[3].split(';') : [],
-                    childIds: values[4] ? values[4].split(';') : [],
-                    gender: values[7],
-                    childOrder: values[8] ? parseInt(values[8]) : null,
-                    parentId: values[9] ? values[9] : null
-                }
-            };
-            return node;
-        });
-        setNodes(newNodes);
-
-        const newEdges = [];
-        newNodes.forEach(node => {
-            node.data.childIds.forEach((childId, index) => {
-                newEdges.push({id: `${node.id}-${childId}`, source: node.id, target: childId, type: 'smoothstep', sourceHandle: 'bottom-source', targetHandle: 'top-target'});
-            });
-            node.data.spouseIds.forEach(spouseId => {
-                // to avoid duplicate edges
-                if (!newEdges.find(edge => (edge.source === spouseId && edge.target === node.id))) {
-                    newEdges.push({id: `${node.id}-${spouseId}`, source: node.id, target: spouseId, type: 'smoothstep', sourceHandle: 'right-source', targetHandle: 'left-target'});
-                }
-            });
-        });
-        setEdges(newEdges);
-    };
-    reader.readAsText(file);
+    // ... (to be implemented later)
   }
 
 
@@ -228,14 +179,17 @@ const App = () => {
         <Col xs={4} className="bg-light p-4">
             <h3 className="mb-4">Family Tree</h3>
             <div className="mb-3">
-                <Button variant="primary" onClick={() => addNode('child', 'male')} className="me-2">
+                <Button variant="info" onClick={() => addNode('spouse', 'female')} className="me-2" 
+                    disabled={!selectedNode || (selectedNode.data.nodeType !== 'root' && selectedNode.data.nodeType !== 'child')}>
+                    Add Spouse
+                </Button>
+                <Button variant="primary" onClick={() => addNode('child', 'male')} className="me-2" 
+                    disabled={!selectedNode || selectedNode.data.nodeType !== 'spouse'}>
                     Add Son
                 </Button>
-                <Button variant="primary" onClick={() => addNode('child', 'female')} className="me-2">
+                <Button variant="primary" onClick={() => addNode('child', 'female')} className="me-2" 
+                    disabled={!selectedNode || selectedNode.data.nodeType !== 'spouse'}>
                     Add Daughter
-                </Button>
-                <Button variant="info" onClick={() => addNode('spouse', 'spouse')} className="me-2">
-                    Add Spouse
                 </Button>
                 <CSVLink data={getCSVData()} filename={"family-tree.csv"} className="btn btn-success me-2">
                     Export CSV

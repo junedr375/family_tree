@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Image } from 'react-bootstrap';
 
@@ -58,7 +59,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
               onChange={(e) => setImageUrl(e.target.value)}
             />
           </Form.Group>
-          {selectedNode.data.parentId && (
+          {selectedNode.data.nodeType === 'child' && (
             <Form.Group className="mb-3">
                 <Form.Label>Child Order</Form.Label>
                 <Form.Control
@@ -71,7 +72,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
           <Button variant="primary" onClick={handleUpdate} disabled={!selectedNode} className="me-2">
             Update
           </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.parentId === null}>
+          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.nodeType === 'root'}>
             Delete
           </Button>
         </Form>
