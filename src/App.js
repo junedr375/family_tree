@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   addEdge,
@@ -112,7 +113,7 @@ const App = () => {
         }));
 
         // Add the new edge
-        setEdges((eds) => addEdge(connection, eds));
+        setEdges((eds) => addEdge({ ...connection, type: 'straight' }, eds));
     },
     [nodes, setNodes, setEdges] 
 );
@@ -200,7 +201,7 @@ const App = () => {
         id: `${parentNode.id}-${newNodeId}`,
         source: parentNode.id,
         target: newNodeId,
-        type: 'smoothstep',
+        type: 'straight',
     };
     setEdges((eds) => eds.concat(newEdge));
   };
@@ -231,18 +232,15 @@ const App = () => {
     }
 
     if (window.confirm('Are you sure you want to delete this node(? This will also delete its children and spouses)')) {
-        // Remove node and its edges from react-flow
         const edgeChanges = edges.filter(e => e.source === nodeId || e.target === nodeId).map(edge => ({type: 'remove', id: edge.id}));
         onEdgesChange(edgeChanges);
 
         const nodeChange = {type: 'remove', id: nodeId};
         onNodesChange([nodeChange]);
 
-        // Update nodes state
         setNodes(nds => {
-            let newNodes = nds.filter(n => n.id !== nodeId); // Remove the node itself
+            let newNodes = nds.filter(n => n.id !== nodeId); 
 
-            // Clear parentId for children of the deleted node
             newNodes = newNodes.map(n => {
                 if (n.data.parentId === nodeId) {
                     return { ...n, data: { ...n.data, parentId: null } };
@@ -250,9 +248,8 @@ const App = () => {
                 return n;
             });
 
-            // Remove deleted node from spouseIds and childIds of other nodes
             newNodes = newNodes.map(n => {
-                if (n.type === 'custom') { // Only update custom nodes
+                if (n.type === 'custom') { 
                     return {
                         ...n,
                         data: {
@@ -307,13 +304,13 @@ const App = () => {
             id: `${newRootId}-${newRootSpouseId}`,
             source: newRootId,
             target: newRootSpouseId,
-            type: 'smoothstep',
+            type: 'straight',
         });
         newEdges.push({
             id: `${newRootSpouseId}-${currentRoot.id}`,
             source: newRootSpouseId,
             target: currentRoot.id,
-            type: 'smoothstep',
+            type: 'straight',
         });
         return newEdges;
     });
