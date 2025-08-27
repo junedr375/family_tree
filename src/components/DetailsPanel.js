@@ -10,8 +10,8 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
       setName(selectedNode.data.name);
       setImageUrl(selectedNode.data.imageUrl);
     } else {
-        setName('');
-        setImageUrl('');
+      setName('');
+      setImageUrl('');
     }
   }, [selectedNode]);
 
@@ -22,9 +22,9 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
   };
 
   const handleDelete = () => {
-      if(selectedNode) {
-          deleteNode(selectedNode.id);
-      }
+    if (selectedNode) {
+      deleteNode(selectedNode.id);
+    }
   }
 
   if (!selectedNode) {
@@ -33,10 +33,10 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
 
   return (
     <Card>
-        <Card.Header>Edit Details</Card.Header>
+      <Card.Header>Edit Details</Card.Header>
       <Card.Body>
         <div className="text-center mb-3">
-            <Image src={imageUrl || (selectedNode.data.gender === 'male' ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle fluid className='img-preview' />
+          <Image src={imageUrl || (selectedNode.data.gender === 'male' ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle fluid className='img-preview' />
         </div>
         <Form>
           <Form.Group className="mb-3">
