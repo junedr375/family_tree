@@ -6,11 +6,11 @@ import {
 } from 'reactflow';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'reactflow/dist/style.css';
-import { Container, Row, Col, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { v4 as uuidv4 } from 'uuid';
 import TreeView from './components/TreeView';
 import DetailsPanel from './components/DetailsPanel';
-import { CSVLink } from "react-csv";
+import TreeControls from './components/TreeControls';
 import { NODE_TYPE, GENDER } from './constants';
 import { getLayoutedElements } from './utils/layout';
 
@@ -432,79 +432,22 @@ const App = () => {
             searchQuery={searchQuery}
           />
         </Col>
-        <Col xs={4} className="bg-light p-4">
-          {isEditingTreeName ? (
-            <Form.Control
-              type="text"
-              style={{ marginBottom: '12px', fontSize: '1.5rem', fontWeight: 'bold' }}
-              value={familyTreeName}
-              onChange={(e) => setFamilyTreeName(e.target.value)}
-              onBlur={() => setIsEditingTreeName(false)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  setIsEditingTreeName(false);
-                }
-              }}
-              autoFocus
-            />
-          ) : (
-            <h3 className="mb-4" onClick={() => setIsEditingTreeName(true)}>
-              {familyTreeName}
-            </h3>
-          )}
-          <div className="mb-3">
-            <Row className="mb-2">
-              <Col>
-                <Button variant="warning" onClick={() => addNode(NODE_TYPE.SPOUSE, GENDER.FEMALE)} className="w-100"
-                  disabled={!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)}>
-                  Add Spouse
-                </Button>
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col>
-                <Button variant="primary" onClick={() => addNode(NODE_TYPE.CHILD, GENDER.MALE)} className="w-100"
-                  disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}>
-                  Add Son
-                </Button>
-              </Col>
-              <Col>
-                <Button variant="success" onClick={() => addNode(NODE_TYPE.CHILD, GENDER.FEMALE)} className="w-100"
-                  disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}>
-                  Add Daughter
-                </Button>
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col>
-                <Button variant="info" onClick={addNewFamilyHead} className="w-100">
-                  Add New Family Head
-                </Button>
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col>
-                <Button variant="dark" onClick={onLayout} className="w-100">
-                  Format Tree
-                </Button>
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col>
-                <CSVLink data={getCSVData()} filename={`${familyTreeName}.csv`} className="btn btn-success w-100">
-                  Export CSV
-                </CSVLink>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <Form.Group controlId="formFile">
-                  <Form.Control type="file" onChange={importCSV} accept=".csv" />
-                </Form.Group>
-              </Col>
-            </Row>
-          </div>
-          <DetailsPanel key={selectedNode ? selectedNode.id : 'no-node'} selectedNode={selectedNode} updateNodeData={updateNodeData} deleteNode={deleteNode} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        <Col xs={4} className="p-4" style={{ backgroundColor: '#f8f9fa', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+          <TreeControls
+            selectedNode={selectedNode}
+            familyTreeName={familyTreeName}
+            isEditingTreeName={isEditingTreeName}
+            setIsEditingTreeName={setIsEditingTreeName}
+            addNode={addNode}
+            addNewFamilyHead={addNewFamilyHead}
+            onLayout={onLayout}
+            getCSVData={getCSVData}
+            importCSV={importCSV}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            setFamilyTreeName={setFamilyTreeName}
+          />
+          <DetailsPanel key={selectedNode ? selectedNode.id : 'no-node'} selectedNode={selectedNode} updateNodeData={updateNodeData} deleteNode={deleteNode} />
         </Col>
       </Row>
     </Container>

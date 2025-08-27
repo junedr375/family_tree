@@ -28,7 +28,7 @@ const getCroppedImg = (image, crop) => {
   return canvas.toDataURL('image/jpeg');
 };
 
-const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, onSearchChange }) => {
+const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [childOrder, setChildOrder] = useState('');
@@ -94,24 +94,10 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, o
 
   return (
     <>
-      <Card className="mb-3">
-        <Card.Header>Search</Card.Header>
-        <Card.Body>
-          <Form.Group className="mb-3">
-            <Form.Control
-              type="text"
-              placeholder="Search by name"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </Form.Group>
-        </Card.Body>
-      </Card>
-
       {!selectedNode ? (
-        <Card><Card.Body>Select a node to see details.</Card.Body></Card>
+        <Card style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}><Card.Body>Select a node to see details.</Card.Body></Card>
       ) : (
-        <Card>
+        <Card style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
       <Card.Header>Edit Details</Card.Header>
       <Card.Body>
         <div className="text-center mb-3">

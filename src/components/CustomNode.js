@@ -13,16 +13,16 @@ const CustomNode = ({ data, selected }) => {
   const isFamilyHead = data.nodeType === NODE_TYPE.ROOT;
   const isHighlighted = data.isHighlighted;
 
-  let cardBgColor = '#fff'; // Default white background
+  let cardBgColor = '#f8f9fa'; // Light gray for default
   if (data.nodeType === NODE_TYPE.SPOUSE) {
-    cardBgColor = 'lightyellow'; // Yellowish background for spouse
+    cardBgColor = '#fff3cd'; // Light yellow for spouse
   } else if (data.nodeType === NODE_TYPE.CHILD) {
     if (data.gender === GENDER.MALE) {
-      cardBgColor = 'lightblue'; // Bluish background for son
+      cardBgColor = '#cfe2ff'; // Light blue for son
     } else if (data.gender === GENDER.FEMALE) {
-      cardBgColor = 'lightgreen'; // Greenish background for daughter
+      cardBgColor = '#d1e7dd'; // Light green for daughter
     } else if (data.nodeType === NODE_TYPE.ROOT) {
-      cardBgColor = 'lightgray'; // Grayish background for Family Head
+      cardBgColor = '#e2e3e5'; // Slightly darker gray for Family Head
     }
   }
 
@@ -33,7 +33,9 @@ const CustomNode = ({ data, selected }) => {
     backgroundColor: cardBgColor, // Apply background color
     display: 'flex',
     flexDirection: 'column',
-    border: selected ? '2px solid blue' : (isHighlighted ? '2px solid red' : 'none'), // Highlight border
+    border: selected ? '2px solid #007bff' : (isHighlighted ? '2px solid #dc3545' : 'none'), // Highlight border (blue for selected, red for search)
+    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // Subtle shadow
+    borderRadius: '8px', // Slightly rounded corners
   };
 
   if (data.nodeType === NODE_TYPE.SPOUSE) {
