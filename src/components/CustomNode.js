@@ -33,9 +33,10 @@ const CustomNode = ({ data, selected }) => {
     backgroundColor: cardBgColor, // Apply background color
     display: 'flex',
     flexDirection: 'column',
-    border: selected ? '2px solid #007bff' : (isHighlighted ? '2px solid #dc3545' : 'none'), // Highlight border (blue for selected, red for search)
-    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // Subtle shadow
+    border: selected ? '3px solid #007bff' : (isHighlighted ? '2px solid #dc3545' : 'none'), // Highlight border (blue for selected, red for search)
+    boxShadow: selected ? '0 6px 12px rgba(0,0,0,0.2)' : '0 4px 8px rgba(0,0,0,0.1)', // More pronounced shadow for selected
     borderRadius: '8px', // Slightly rounded corners
+    zIndex: selected ? 1000 : 'auto', // Bring selected node to front
   };
 
   if (data.nodeType === NODE_TYPE.SPOUSE) {
