@@ -32,6 +32,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, o
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [childOrder, setChildOrder] = useState('');
+  const [spouseOrder, setSpouseOrder] = useState('');
 
   const [upImg, setUpImg] = useState();
   const imgRef = useRef(null);
@@ -44,6 +45,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, o
       setName(selectedNode.data.name);
       setImageUrl(selectedNode.data.imageUrl);
       setChildOrder(selectedNode.data.childOrder || '');
+      setSpouseOrder(selectedNode.data.spouseOrder || '');
     } else {
       setName('');
       setImageUrl('');
@@ -53,7 +55,12 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, o
 
   const handleUpdate = () => {
     if (selectedNode) {
-      updateNodeData(selectedNode.id, { name, imageUrl, childOrder: childOrder ? parseInt(childOrder) : null });
+      updateNodeData(selectedNode.id, { 
+        name, 
+        imageUrl, 
+        childOrder: childOrder ? parseInt(childOrder) : null,
+        spouseOrder: spouseOrder ? parseInt(spouseOrder) : null
+      });
     }
   };
 
@@ -134,6 +141,16 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, o
                 type="number"
                 value={childOrder}
                 onChange={(e) => setChildOrder(e.target.value)}
+              />
+            </Form.Group>
+          )}
+          {selectedNode.data.nodeType === NODE_TYPE.SPOUSE && (
+            <Form.Group className="mb-3">
+              <Form.Label>Spouse Order</Form.Label>
+              <Form.Control
+                type="number"
+                value={spouseOrder}
+                onChange={(e) => setSpouseOrder(e.target.value)}
               />
             </Form.Group>
           )}

@@ -92,8 +92,7 @@ const App = () => {
 
       // Prevent duplicate edges
       const edgeExists = edges.some(e =>
-        (e.source === connection.source && e.target === connection.target) ||
-        (e.source === connection.target && e.target === connection.source)
+        (e.source === connection.source && e.target === connection.target)
       );
       if (edgeExists) {
         alert("A connection already exists between these two nodes.");
@@ -104,18 +103,17 @@ const App = () => {
       let updatedEdges = [...edges];
 
       if (sourceNode.data.nodeType === NODE_TYPE.SPOUSE && targetNode.data.nodeType === NODE_TYPE.CHILD) {
-        // Existing logic for Spouse to Child
+        // Spouse to Child connection
+        // If the child already has a parent, remove the old connection
         if (targetNode.data.parentId) {
           const oldParent = nodes.find(n => n.id === targetNode.data.parentId);
           if (oldParent) {
-            // Remove child from old parent's childIds
             updatedNodes = updatedNodes.map(n => {
               if (n.id === oldParent.id) {
-                return { ...n, data: { ...n.data, childIds: n.data.childIds.filter(id => id !== targetNode.id) } };
+                return { ...n, data: { ...n.data, childIds: (n.data.childIds || []).filter(id => id !== targetNode.id) } };
               }
               return n;
             });
-            // Remove old edge
             updatedEdges = updatedEdges.filter(e => !(e.source === oldParent.id && e.target === targetNode.id));
           }
         }
@@ -126,12 +124,32 @@ const App = () => {
             return { ...n, data: { ...n.data, parentId: sourceNode.id } };
           }
           if (n.id === sourceNode.id) {
-            return { ...n, data: { ...n.data, childIds: [...n.data.childIds, targetNode.id] } };
+            return { ...n, data: { ...n.data, childIds: [...(n.data.childIds || []), targetNode.id] } };
           }
           return n;
         });
       } else if (sourceNode.data.nodeType === NODE_TYPE.CHILD && targetNode.data.nodeType === NODE_TYPE.SPOUSE) {
-        // New logic for Child to Spouse
+        // Gender validation for Child to Spouse
+        if (sourceNode.data.gender === targetNode.data.gender) {
+          alert(`Invalid connection: A ${sourceNode.data.gender.toLowerCase()} child cannot be connected to a ${targetNode.data.gender.toLowerCase()} spouse.`);
+          return;
+        }
+
+        // Child to Spouse connection
+        // If the spouse already has a parent (child), remove the old connection
+        if (targetNode.data.parentId) {
+          const oldParent = nodes.find(n => n.id === targetNode.data.parentId);
+          if (oldParent) {
+            updatedNodes = updatedNodes.map(n => {
+              if (n.id === oldParent.id) {
+                return { ...n, data: { ...n.data, childIds: (n.data.childIds || []).filter(id => id !== targetNode.id) } };
+              }
+              return n;
+            });
+            updatedEdges = updatedEdges.filter(e => !(e.source === oldParent.id && e.target === targetNode.id));
+          }
+        }
+
         // The child node becomes the parent of the spouse node's children
         updatedNodes = updatedNodes.map(n => {
           if (n.id === targetNode.id) {
@@ -139,12 +157,24 @@ const App = () => {
             return { ...n, data: { ...n.data, parentId: sourceNode.id } };
           }
           if (n.id === sourceNode.id) {
-            // Add spouse's children to child's children
-            const newChildIds = [...new Set([...n.data.childIds, ...targetNode.data.childIds])];
+            const newChildIds = [...new Set([...(n.data.childIds || []), ...(targetNode.data.childIds || [])])];
             return { ...n, data: { ...n.data, childIds: newChildIds } };
           }
           return n;
         });
+
+        // Assign spouseOrder to the targetNode (spouse)
+        const spousesOfSource = updatedNodes.filter(n => 
+          n.data.nodeType === NODE_TYPE.SPOUSE && 
+          n.data.parentId === sourceNode.id
+        );
+        updatedNodes = updatedNodes.map(n => {
+          if (n.id === targetNode.id) {
+            return { ...n, data: { ...n.data, spouseOrder: spousesOfSource.length + 1 } };
+          }
+          return n;
+        });
+
       } else {
         alert("Invalid connection: Only Spouse to Child or Child to Spouse connections are allowed.");
         return;
@@ -192,6 +222,16 @@ const App = () => {
 
     let newNode;
     if (type === NODE_TYPE.SPOUSE) {
+      const spouseCount = nodes.filter(n => {
+        if (n.data.nodeType === NODE_TYPE.SPOUSE) {
+          const isConnectedToParent = edges.some(e =>
+            (e.source === parentNode.id && e.target === n.id) ||
+            (e.source === n.id && e.target === parentNode.id)
+          );
+          return isConnectedToParent;
+        }
+        return false;
+      }).length;
       newNode = {
         id: newNodeId,
         type: 'custom',
@@ -200,7 +240,8 @@ const App = () => {
           imageUrl: '',
           gender: newSpouseGender,
           nodeType: NODE_TYPE.SPOUSE,
-          childIds: []
+          childIds: [],
+          spouseOrder: spouseCount + 1
         },
         position: {
           x: parentNode.position.x,

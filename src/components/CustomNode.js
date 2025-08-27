@@ -40,6 +40,7 @@ const CustomNode = ({ data, selected }) => {
     return (
       <Card style={cardStyle}>
         <Card.Body className="d-flex align-items-center p-2">
+          {data.spouseOrder && <Badge pill bg="secondary" style={{ position: 'absolute', top: '5px', left: '5px' }}>{data.spouseOrder}</Badge>}
           <Image src={data.imageUrl || `https://avatar.iran.liara.run/public/${data.gender === GENDER.MALE ? 'boy' : 'girl'}`} roundedCircle style={{ width: '60px', height: '60px', marginRight: '10px' }} />
           <Card.Title style={{ fontSize: '1rem', marginBottom: '0' }}>{data.name}</Card.Title>
         </Card.Body>
