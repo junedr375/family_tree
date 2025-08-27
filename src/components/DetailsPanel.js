@@ -4,20 +4,23 @@ import { Form, Button, Card, Image } from 'react-bootstrap';
 const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [childOrder, setChildOrder] = useState('');
 
   useEffect(() => {
     if (selectedNode) {
       setName(selectedNode.data.name);
       setImageUrl(selectedNode.data.imageUrl);
+      setChildOrder(selectedNode.data.childOrder || '');
     } else {
         setName('');
         setImageUrl('');
+        setChildOrder('');
     }
   }, [selectedNode]);
 
   const handleUpdate = () => {
     if (selectedNode) {
-      updateNodeData(selectedNode.id, { name, imageUrl });
+      updateNodeData(selectedNode.id, { name, imageUrl, childOrder: childOrder ? parseInt(childOrder) : null });
     }
   };
 
@@ -55,10 +58,20 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
               onChange={(e) => setImageUrl(e.target.value)}
             />
           </Form.Group>
+          {selectedNode.data.parentId && (
+            <Form.Group className="mb-3">
+                <Form.Label>Child Order</Form.Label>
+                <Form.Control
+                    type="number"
+                    value={childOrder}
+                    onChange={(e) => setChildOrder(e.target.value)}
+                />
+            </Form.Group>
+          )}
           <Button variant="primary" onClick={handleUpdate} disabled={!selectedNode} className="me-2">
             Update
           </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.id === '1'}>
+          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.parentId === null}>
             Delete
           </Button>
         </Form>

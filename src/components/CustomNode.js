@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { Card, Image, Badge } from 'react-bootstrap';
@@ -9,8 +8,8 @@ const CrownIcon = () => (
     </svg>
 );
 
-const CustomNode = ({ data, id }) => {
-  const isFamilyHead = id === '1';
+const CustomNode = ({ data }) => {
+  const isFamilyHead = data.parentId === null;
 
   return (
     <Card style={{ width: '150px', position: 'relative' }}>

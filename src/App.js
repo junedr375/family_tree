@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import {
   addEdge,
@@ -15,7 +14,7 @@ import { CSVLink } from "react-csv";
 
 const App = () => {
   const [nodes, setNodes] = useState([
-    { id: '1', type: 'custom', data: { name: 'Family Head', imageUrl: '', spouseIds: [], childIds: [], gender: 'male' }, position: { x: 250, y: 5 } }
+    { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', spouseIds: [], childIds: [], gender: 'male', parentId: null }, position: { x: 250, y: 5 } }
   ]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -61,7 +60,8 @@ const App = () => {
           spouseIds: type === 'spouse' ? [parentNode.id] : [], 
           childIds: [], 
           gender: gender, 
-          childOrder: type === 'child' ? childCount + 1 : null 
+          childOrder: type === 'child' ? childCount + 1 : null,
+          parentId: type === 'child' ? parentNode.id : null
         },
       position: {
         x: parentNode.position.x + (type === 'spouse' ? 250 : 0),
@@ -108,27 +108,31 @@ const App = () => {
   };
 
   const updateNodeData = (nodeId, data) => {
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes(nds => nds.map(node => {
         if (node.id === nodeId) {
-          return { ...node, data: { ...node.data, ...data } };
+            return { ...node, data: { ...node.data, ...data } };
         }
         return node;
-      })
-    );
-    setSelectedNode(prev => ({...prev, data: {...prev.data, ...data}}));
+    }));
+    setSelectedNode(prev => {
+        if(prev) {
+            return { ...prev, data: { ...prev.data, ...data } };
+        }
+        return null;
+    });
   };
 
   const deleteNode = (nodeId) => {
     if (!nodeId) return;
-    if (nodeId === '1') {
+    const nodeToDelete = nodes.find(n => n.id === nodeId);
+    if (!nodeToDelete) return;
+
+    if (nodeToDelete.data.parentId === null) {
         alert('The Family Head cannot be deleted.');
         return;
     }
-    if (window.confirm('Are you sure you want to delete this node?')) {
-        const nodeToRemove = nodes.find(n => n.id === nodeId);
-        if (!nodeToRemove) return;
 
+    if (window.confirm('Are you sure you want to delete this node?')) {
         const edgeChanges = edges.filter(e => e.source === nodeId || e.target === nodeId).map(edge => ({type: 'remove', id: edge.id}));
         onEdgesChange(edgeChanges);
 
@@ -158,7 +162,8 @@ const App = () => {
         x: node.position.x,
         y: node.position.y,
         gender: node.data.gender,
-        childOrder: node.data.childOrder
+        childOrder: node.data.childOrder,
+        parentId: node.data.parentId
     }));
   }
 
@@ -181,7 +186,8 @@ const App = () => {
                     spouseIds: values[3] ? values[3].split(';') : [],
                     childIds: values[4] ? values[4].split(';') : [],
                     gender: values[7],
-                    childOrder: values[8] ? parseInt(values[8]) : null
+                    childOrder: values[8] ? parseInt(values[8]) : null,
+                    parentId: values[9] ? values[9] : null
                 }
             };
             return node;
