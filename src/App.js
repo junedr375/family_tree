@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   addEdge,
@@ -21,6 +20,8 @@ const App = () => {
   ]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [familyTreeName, setFamilyTreeName] = useState('My Family Tree');
+  const [isEditingTreeName, setIsEditingTreeName] = useState(false);
 
   useEffect(() => {
     const parents = nodes.filter(n => n.data.childIds && n.data.childIds.length > 0);
@@ -373,7 +374,25 @@ const App = () => {
           />
         </Col>
         <Col xs={4} className="bg-light p-4">
-          <h3 className="mb-4">Family Tree</h3>
+          {isEditingTreeName ? (
+            <Form.Control
+              type="text"
+              style={{ marginBottom: '12px', fontSize: '1.5rem', fontWeight: 'bold' }}
+              value={familyTreeName}
+              onChange={(e) => setFamilyTreeName(e.target.value)}
+              onBlur={() => setIsEditingTreeName(false)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  setIsEditingTreeName(false);
+                }
+              }}
+              autoFocus
+            />
+          ) : (
+            <h3 className="mb-4" onClick={() => setIsEditingTreeName(true)}>
+              {familyTreeName}
+            </h3>
+          )}
           <div className="mb-3">
             <Row className="mb-2">
               <Col>
@@ -413,7 +432,7 @@ const App = () => {
             </Row>
             <Row className="mb-2">
               <Col>
-                <CSVLink data={getCSVData()} filename={"family-tree.csv"} className="btn btn-success w-100">
+                <CSVLink data={getCSVData()} filename={`${familyTreeName}.csv`} className="btn btn-success w-100">
                   Export CSV
                 </CSVLink>
               </Col>
