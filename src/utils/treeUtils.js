@@ -33,7 +33,7 @@ export const handleSpouseToChildConnection = (nodes, edges, connection) => {
     return n;
   });
 
-  return { updatedNodes, updatedEdges };
+  return { updatedNodes, updatedEdges, error: null };
 };
 
 export const handleChildToSpouseConnection = (nodes, edges, connection) => {
@@ -45,8 +45,11 @@ export const handleChildToSpouseConnection = (nodes, edges, connection) => {
 
   // Gender validation
   if (sourceNode.data.gender === targetNode.data.gender) {
-    alert(`Invalid connection: A ${sourceNode.data.gender.toLowerCase()} child cannot be connected to a ${targetNode.data.gender.toLowerCase()} spouse.`);
-    return { updatedNodes: nodes, updatedEdges: edges };
+    return { 
+      updatedNodes: nodes, 
+      updatedEdges: edges, 
+      error: `Invalid connection: A ${sourceNode.data.gender.toLowerCase()} child cannot be connected to a ${targetNode.data.gender.toLowerCase()} spouse.` 
+    };
   }
 
   // If the spouse already has a parent (child), remove the old connection
@@ -88,7 +91,7 @@ export const handleChildToSpouseConnection = (nodes, edges, connection) => {
     return n;
   });
 
-  return { updatedNodes, updatedEdges };
+  return { updatedNodes, updatedEdges, error: null };
 };
 
 export const createSpouseNode = (parentNode, nodes) => {

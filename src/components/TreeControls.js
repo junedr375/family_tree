@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form, Row, Col, InputGroup, ProgressBar } from 'react-bootstrap';
+import { Button, Form, Row, Col, InputGroup, ProgressBar, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { NODE_TYPE, GENDER } from '../constants';
 
 const TreeControls = ({
@@ -21,6 +21,115 @@ const TreeControls = ({
   const [isSpouseHovered, setIsSpouseHovered] = useState(false);
   const [isSonHovered, setIsSonHovered] = useState(false);
   const [isDaughterHovered, setIsDaughterHovered] = useState(false);
+
+  const renderAddSpouseButton = () => {
+    const isDisabled = !selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD);
+    const tooltipText = !selectedNode ? 'Select a node to add a spouse' : 'You can only add a spouse to the Family Head or a child';
+
+    return (
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id="tooltip-add-spouse">{isDisabled ? tooltipText : 'Add a spouse to the selected person'}</Tooltip>}
+      >
+        <span className="d-inline-block">
+          <Button 
+            size="sm" 
+            variant="" 
+            onClick={() => addNode(NODE_TYPE.SPOUSE, GENDER.FEMALE)} 
+            className="d-inline-flex flex-row align-items-center py-2 px-2 me-1"
+            disabled={isDisabled}
+            style={{
+              pointerEvents: isDisabled ? 'none' : 'auto',
+              backgroundColor: '#ffe0b2',
+              color: '#e65100',
+              border: '1px solid #ffcc80',
+              boxShadow: isDisabled ? 'none' : (isSpouseHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
+              transform: isDisabled ? 'translateY(0)' : (isSpouseHovered ? 'translateY(-2px)' : 'translateY(0)'),
+              transition: 'all 0.2s ease-in-out',
+              opacity: isDisabled ? 0.6 : 1,
+            }}
+            onMouseEnter={() => setIsSpouseHovered(true)}
+            onMouseLeave={() => setIsSpouseHovered(false)}
+          >
+            <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♀</span> Add Spouse
+          </Button>
+        </span>
+      </OverlayTrigger>
+    );
+  };
+
+  const renderAddSonButton = () => {
+    const isDisabled = !selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE;
+    const tooltipText = !selectedNode ? 'Select a spouse to add a son' : 'You can only add a son to a spouse';
+
+    return (
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id="tooltip-add-son">{isDisabled ? tooltipText : 'Add a son to the selected spouse'}</Tooltip>}
+      >
+        <span className="d-inline-block">
+          <Button 
+            size="sm" 
+            variant="" 
+            onClick={() => addNode(NODE_TYPE.CHILD, GENDER.MALE)} 
+            className="d-inline-flex flex-row align-items-center py-2 px-2 me-1"
+            disabled={isDisabled}
+            style={{
+              pointerEvents: isDisabled ? 'none' : 'auto',
+              backgroundColor: '#bbdefb',
+              color: '#1976d2',
+              border: '1px solid #90caf9',
+              boxShadow: isDisabled ? 'none' : (isSonHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
+              transform: isDisabled ? 'translateY(0)' : (isSonHovered ? 'translateY(-2px)' : 'translateY(0)'),
+              transition: 'all 0.2s ease-in-out',
+              opacity: isDisabled ? 0.6 : 1,
+            }}
+            onMouseEnter={() => setIsSonHovered(true)}
+            onMouseLeave={() => setIsSonHovered(false)}
+          >
+            <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♂</span> Add Son
+          </Button>
+        </span>
+      </OverlayTrigger>
+    );
+  };
+
+  const renderAddDaughterButton = () => {
+    const isDisabled = !selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE;
+    const tooltipText = !selectedNode ? 'Select a spouse to add a daughter' : 'You can only add a daughter to a spouse';
+
+    return (
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id="tooltip-add-daughter">{isDisabled ? tooltipText : 'Add a daughter to the selected spouse'}</Tooltip>}
+      >
+        <span className="d-inline-block">
+          <Button 
+            size="sm" 
+            variant="" 
+            onClick={() => addNode(NODE_TYPE.CHILD, GENDER.FEMALE)} 
+            className="d-inline-flex flex-row align-items-center py-2 px-2"
+            disabled={isDisabled}
+            style={{
+              pointerEvents: isDisabled ? 'none' : 'auto',
+              backgroundColor: '#c8e6c9',
+              color: '#388e3c',
+              border: '1px solid #a5d6a7',
+              boxShadow: isDisabled ? 'none' : (isDaughterHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
+              transform: isDisabled ? 'translateY(0)' : (isDaughterHovered ? 'translateY(-2px)' : 'translateY(0)'),
+              transition: 'all 0.2s ease-in-out',
+              opacity: isDisabled ? 0.6 : 1,
+            }}
+            onMouseEnter={() => setIsDaughterHovered(true)}
+            onMouseLeave={() => setIsDaughterHovered(false)}
+          >
+            <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♀</span> Add Daughter
+          </Button>
+        </span>
+      </OverlayTrigger>
+    );
+  };
+
   return (
     <>
       {isEditingTreeName ? (
@@ -89,66 +198,9 @@ const TreeControls = ({
         {/* Icon-text buttons for adding nodes */}
         <Row className="mb-1 justify-content-center">
           <Col className="d-flex justify-content-center">
-            <Button 
-              size="sm" 
-              variant="" 
-              onClick={() => addNode(NODE_TYPE.SPOUSE, GENDER.FEMALE)} 
-              className="d-inline-flex flex-row align-items-center py-2 px-2 me-1"
-              disabled={!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)}
-              style={{
-                backgroundColor: '#ffe0b2', // Light orange
-                color: '#e65100', // Darker orange text
-                border: '1px solid #ffcc80', // Subtle orange border
-                boxShadow: (!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)) ? 'none' : (isSpouseHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
-                transform: (!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)) ? 'translateY(0)' : (isSpouseHovered ? 'translateY(-2px)' : 'translateY(0)'),
-                transition: 'all 0.2s ease-in-out',
-                opacity: (!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)) ? 0.6 : 1,
-              }}
-              onMouseEnter={() => setIsSpouseHovered(true)}
-              onMouseLeave={() => setIsSpouseHovered(false)}
-            >
-              <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♀</span> Add Spouse
-            </Button>
-            <Button 
-              size="sm" 
-              variant="" 
-              onClick={() => addNode(NODE_TYPE.CHILD, GENDER.MALE)} 
-              className="d-inline-flex flex-row align-items-center py-2 px-2 me-1"
-              disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}
-              style={{
-                backgroundColor: '#bbdefb', // Light blue
-                color: '#1976d2', // Darker blue text
-                border: '1px solid #90caf9', // Subtle blue border
-                boxShadow: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 'none' : (isSonHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
-                transform: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 'translateY(0)' : (isSonHovered ? 'translateY(-2px)' : 'translateY(0)'),
-                transition: 'all 0.2s ease-in-out',
-                opacity: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 0.6 : 1,
-              }}
-              onMouseEnter={() => setIsSonHovered(true)}
-              onMouseLeave={() => setIsSonHovered(false)}
-            >
-              <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♂</span> Add Son
-            </Button>
-            <Button 
-              size="sm" 
-              variant="" 
-              onClick={() => addNode(NODE_TYPE.CHILD, GENDER.FEMALE)} 
-              className="d-inline-flex flex-row align-items-center py-2 px-2"
-              disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}
-              style={{
-                backgroundColor: '#c8e6c9', // Light green
-                color: '#388e3c', // Darker green text
-                border: '1px solid #a5d6a7', // Subtle green border
-                boxShadow: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 'none' : (isDaughterHovered ? '0 4px 8px rgba(0,0,0,0.2)' : '0 2px 4px rgba(0,0,0,0.1)'),
-                transform: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 'translateY(0)' : (isDaughterHovered ? 'translateY(-2px)' : 'translateY(0)'),
-                transition: 'all 0.2s ease-in-out',
-                opacity: (!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE) ? 0.6 : 1,
-              }}
-              onMouseEnter={() => setIsDaughterHovered(true)}
-              onMouseLeave={() => setIsDaughterHovered(false)}
-            >
-              <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>♀</span> Add Daughter
-            </Button>
+            {renderAddSpouseButton()}
+            {renderAddSonButton()}
+            {renderAddDaughterButton()}
           </Col>
         </Row>
 

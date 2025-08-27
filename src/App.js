@@ -13,6 +13,8 @@ import TreeView from './components/TreeView';
 import DetailsPanel from './components/DetailsPanel';
 import TreeControls from './components/TreeControls';
 import { NODE_TYPE, GENDER } from './constants';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { getLayoutedElements } from './utils/layout';
 import {
   handleSpouseToChildConnection,
@@ -116,6 +118,11 @@ const App = () => {
         result = handleChildToSpouseConnection(nodes, edges, connection);
       } else {
         alert("Invalid connection: Only Spouse to Child or Child to Spouse connections are allowed.");
+        return;
+      }
+
+      if (result.error) {
+        toast.error(result.error);
         return;
       }
 
@@ -336,6 +343,9 @@ const App = () => {
       return;
     }
 
+    const fileName = file.name.replace(/\.csv$/, '');
+    setFamilyTreeName(fileName);
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -343,7 +353,7 @@ const App = () => {
       complete: async (results) => {
         const importedData = results.data.filter(row => row.id); // Filter out empty rows
         if (importedData.length === 0) {
-          alert("CSV file is empty or invalid.");
+          toast.error("CSV file is empty or invalid.");
           setIsImporting(false);
           return;
         }
@@ -356,7 +366,7 @@ const App = () => {
         const calculatedChecksum = calculateChecksum(dataWithoutChecksum);
 
         if (importedChecksum && importedChecksum !== calculatedChecksum) {
-          alert("Import failed: CSV file has been tampered with or is corrupted.");
+          toast.error("Import failed: CSV file has been tampered with or is corrupted.");
           setIsImporting(false);
           return;
         }
@@ -408,10 +418,10 @@ const App = () => {
         setEdges([...layouted.edges]);
         setSelectedNode(null);
         setIsImporting(false);
-        alert("Family tree imported successfully!");
+        toast.success("Family tree imported successfully!");
       }
     });
-  }, [onLayout, calculateChecksum]);
+  }, [onLayout, calculateChecksum, setFamilyTreeName]);
 
   const handleExport = useCallback(async () => {
     const data = await getCSVData();
