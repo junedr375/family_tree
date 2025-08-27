@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form, Row, Col, InputGroup } from 'react-bootstrap';
-import { CSVLink } from "react-csv";
+import { Button, Form, Row, Col, InputGroup, ProgressBar } from 'react-bootstrap';
 import { NODE_TYPE, GENDER } from '../constants';
 
 const TreeControls = ({
@@ -11,11 +10,13 @@ const TreeControls = ({
   addNode,
   addNewFamilyHead,
   onLayout,
-  getCSVData,
+  onExportClick,
   importCSV,
   searchQuery,
   onSearchChange,
-  setFamilyTreeName
+  setFamilyTreeName,
+  isExporting,
+  isImporting
 }) => {
   const [isSpouseHovered, setIsSpouseHovered] = useState(false);
   const [isSonHovered, setIsSonHovered] = useState(false);
@@ -154,9 +155,14 @@ const TreeControls = ({
         {/* CSV Import/Export */}
         <Row className="mb-2">
           <Col>
-            <CSVLink data={getCSVData()} filename={`${familyTreeName}.csv`} className="btn btn-success w-100" style={{ border: '1px solid #28a745', opacity: !getCSVData().length ? 0.6 : 1 }}>
+            <Button 
+              onClick={onExportClick} 
+              className="btn btn-success w-100" 
+              style={{ border: '1px solid #28a745', opacity: (isExporting || isImporting) ? 0.6 : 1 }}
+              disabled={isExporting || isImporting}
+            >
               Export CSV
-            </CSVLink>
+            </Button>
           </Col>
         </Row>
         <Row>
@@ -166,6 +172,12 @@ const TreeControls = ({
             </Form.Group>
           </Col>
         </Row>
+        {(isExporting || isImporting) && (
+          <div className="mt-3">
+            <ProgressBar animated now={100} variant="primary" />
+            <p className="text-center mt-1">{isExporting ? 'Exporting...' : 'Importing...'}</p>
+          </div>
+        )}
       </div>
     </>
   );
