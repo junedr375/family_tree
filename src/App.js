@@ -12,6 +12,7 @@ import TreeView from './components/TreeView';
 import DetailsPanel from './components/DetailsPanel';
 import { CSVLink } from "react-csv";
 import { NODE_TYPE, GENDER } from './constants';
+import { getLayoutedElements } from './utils/layout';
 
 const App = () => {
   const [nodes, setNodes] = useState([
@@ -95,13 +96,28 @@ const App = () => {
             alert("Only child nodes can be linked as children.");
             return;
         }
-        if (targetNode.data.parentId && targetNode.data.parentId !== sourceNode.id) {
-            alert("Child already has a parent. Please delete the existing connection first if you want to re-parent.");
-            return;
+
+        // Handle existing parent
+        let updatedNodes = nodes;
+        let updatedEdges = edges;
+
+        if (targetNode.data.parentId) {
+            const oldParent = nodes.find(n => n.id === targetNode.data.parentId);
+            if (oldParent) {
+                // Remove child from old parent's childIds
+                updatedNodes = updatedNodes.map(n => {
+                    if (n.id === oldParent.id) {
+                        return { ...n, data: { ...n.data, childIds: n.data.childIds.filter(id => id !== targetNode.id) } };
+                    }
+                    return n;
+                });
+                // Remove old edge
+                updatedEdges = updatedEdges.filter(e => !(e.source === oldParent.id && e.target === targetNode.id));
+            }
         }
 
-        // Update data model
-        setNodes(nds => nds.map(n => {
+        // Update data model for new parent
+        updatedNodes = updatedNodes.map(n => {
             if (n.id === targetNode.id) {
                 return { ...n, data: { ...n.data, parentId: sourceNode.id } };
             }
@@ -109,12 +125,15 @@ const App = () => {
                 return { ...n, data: { ...n.data, childIds: [...n.data.childIds, targetNode.id] } };
             }
             return n;
-        }));
+        });
 
         // Add the new edge
-        setEdges((eds) => addEdge({ ...connection, type: 'straight' }, eds));
+        updatedEdges = addEdge({ ...connection, type: 'straight' }, updatedEdges);
+
+        setNodes(updatedNodes);
+        setEdges(updatedEdges);
     },
-    [nodes, setNodes, setEdges] 
+    [nodes, edges, setNodes, setEdges] 
 );
 
   const onNodeClick = (event, node) => {
@@ -332,6 +351,12 @@ const App = () => {
     // ... (to be implemented later)
   }
 
+  const onLayout = useCallback(() => {
+    const layouted = getLayoutedElements(nodes, edges);
+    setNodes([...layouted.nodes]);
+    setEdges([...layouted.edges]);
+}, [nodes, edges]);
+
 
   return (
     <Container fluid>
@@ -375,6 +400,13 @@ const App = () => {
                     <Col>
                         <Button variant="success" onClick={addNewFamilyHead} className="w-100">
                             Add New Family Head
+                        </Button>
+                    </Col>
+                </Row>
+                <Row className="mb-2">
+                    <Col>
+                        <Button variant="secondary" onClick={onLayout} className="w-100">
+                            Format Tree
                         </Button>
                     </Col>
                 </Row>
