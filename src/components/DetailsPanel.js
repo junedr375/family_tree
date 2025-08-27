@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Image } from 'react-bootstrap';
+import { NODE_TYPE, GENDER } from '../constants';
 
 const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
   const [name, setName] = useState('');
@@ -40,7 +41,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
         <Card.Header>Edit Details</Card.Header>
       <Card.Body>
         <div className="text-center mb-3">
-            <Image src={imageUrl || (selectedNode.data.gender === 'male' ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle fluid className='img-preview' />
+            <Image src={imageUrl || (selectedNode.data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle fluid className='img-preview' />
         </div>
         <Form>
           <Form.Group className="mb-3">
@@ -59,7 +60,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
               onChange={(e) => setImageUrl(e.target.value)}
             />
           </Form.Group>
-          {selectedNode.data.nodeType === 'child' && (
+          {selectedNode.data.nodeType === NODE_TYPE.CHILD && (
             <Form.Group className="mb-3">
                 <Form.Label>Child Order</Form.Label>
                 <Form.Control
@@ -72,7 +73,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
           <Button variant="primary" onClick={handleUpdate} disabled={!selectedNode} className="me-2">
             Update
           </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.nodeType === 'root'}>
+          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.nodeType === NODE_TYPE.ROOT}>
             Delete
           </Button>
         </Form>

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   addEdge,
@@ -11,13 +12,60 @@ import { v4 as uuidv4 } from 'uuid';
 import TreeView from './components/TreeView';
 import DetailsPanel from './components/DetailsPanel';
 import { CSVLink } from "react-csv";
+import { NODE_TYPE, GENDER } from './constants';
 
 const App = () => {
   const [nodes, setNodes] = useState([
-    { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', gender: 'male', nodeType: 'root' }, position: { x: 250, y: 5 } }
+    { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', gender: GENDER.MALE, nodeType: NODE_TYPE.ROOT }, position: { x: 250, y: 5 } }
   ]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+
+  useEffect(() => {
+    const parents = nodes.filter(n => n.data.childIds && n.data.childIds.length > 0);
+    if (parents.length === 0) return;
+
+    let changed = false;
+    const newNodes = [...nodes];
+
+    parents.forEach(parent => {
+      const children = parent.data.childIds.map(id => newNodes.find(n => n.id === id)).filter(Boolean);
+
+      const sortedChildren = [...children].sort((a, b) => (a.data.childOrder || 0) - (b.data.childOrder || 0));
+
+      const sortedChildIds = sortedChildren.map(c => c.id);
+
+      if (JSON.stringify(parent.data.childIds) !== JSON.stringify(sortedChildIds)) {
+        const parentIndex = newNodes.findIndex(n => n.id === parent.id);
+        newNodes[parentIndex] = {
+          ...parent,
+          data: {
+            ...parent.data,
+            childIds: sortedChildIds
+          }
+        };
+
+        sortedChildren.forEach((child, index) => {
+          const childIndex = newNodes.findIndex(n => n.id === child.id);
+          if (newNodes[childIndex].data.childOrder !== index + 1) {
+            newNodes[childIndex] = {
+              ...newNodes[childIndex],
+              data: {
+                ...newNodes[childIndex].data,
+                childOrder: index + 1
+              }
+            };
+          }
+        });
+
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      setNodes(newNodes);
+    }
+  }, [nodes, setNodes]);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -48,77 +96,92 @@ const App = () => {
     if (!parentNode) return;
 
     const newNodeId = uuidv4();
-    const genderName = type === 'spouse' ? 'Spouse' : (gender === 'male' ? 'Son' : 'Daughter');
-    
+    let newSpouseGender;
+    let newChildGenderName;
+
+    if (type === NODE_TYPE.SPOUSE) {
+      if (parentNode.data.gender === GENDER.MALE || parentNode.data.nodeType === NODE_TYPE.ROOT) {
+        newSpouseGender = GENDER.FEMALE;
+      } else if (parentNode.data.gender === GENDER.FEMALE) {
+        newSpouseGender = GENDER.MALE;
+      } else {
+        newSpouseGender = GENDER.FEMALE;
+      }
+      newChildGenderName = GENDER.SPOUSE;
+    } else {
+      newSpouseGender = gender;
+      newChildGenderName = gender === GENDER.MALE ? 'Son' : 'Daughter';
+    }
+
     let newNode;
-    if (type === 'spouse') {
-        newNode = {
-            id: newNodeId,
-            type: 'custom',
-            data: { 
-                name: `New ${genderName}`,
-                imageUrl: '',
-                gender: gender,
-                nodeType: 'spouse',
-                childIds: []
-            },
-            position: {
-                x: parentNode.position.x,
-                y: parentNode.position.y + 150,
-            },
-        };
-    } else { // child
-        const childCount = parentNode.data.childIds.length;
-        newNode = {
-            id: newNodeId,
-            type: 'custom',
-            data: { 
-                name: `New ${genderName}`,
-                imageUrl: '',
-                gender: gender,
-                nodeType: 'child',
-                childOrder: childCount + 1,
-                parentId: parentNode.id
-            },
-            position: {
-                x: parentNode.position.x + (childCount * 150),
-                y: parentNode.position.y + 150,
-            },
-        };
+    if (type === NODE_TYPE.SPOUSE) {
+      newNode = {
+        id: newNodeId,
+        type: 'custom',
+        data: {
+          name: `New ${newChildGenderName}`,
+          imageUrl: '',
+          gender: newSpouseGender,
+          nodeType: NODE_TYPE.SPOUSE,
+          childIds: []
+        },
+        position: {
+          x: parentNode.position.x,
+          y: parentNode.position.y + 150,
+        },
+      };
+    } else {
+      const childCount = parentNode.data.childIds.length;
+      newNode = {
+        id: newNodeId,
+        type: 'custom',
+        data: {
+          name: `New ${newChildGenderName}`,
+          imageUrl: '',
+          gender: newSpouseGender,
+          nodeType: NODE_TYPE.CHILD,
+          childOrder: childCount + 1,
+          parentId: parentNode.id
+        },
+        position: {
+          x: parentNode.position.x + (childCount * 150),
+          y: parentNode.position.y + 150,
+        },
+      };
     }
 
     setNodes(nds => nds.concat(newNode));
 
-    if (type === 'child') {
-        setNodes(nds => nds.map(n => {
-            if (n.id === parentNode.id) {
-                return { ...n, data: { ...n.data, childIds: [...n.data.childIds, newNodeId] } };
-            }
-            return n;
-        }));
+    if (type === NODE_TYPE.CHILD) {
+      setNodes(nds => nds.map(n => {
+        if (n.id === parentNode.id) {
+          return { ...n, data: { ...n.data, childIds: [...n.data.childIds, newNodeId] } };
+        }
+        return n;
+      }));
     }
 
     const newEdge = {
-        id: `${parentNode.id}-${newNodeId}`,
-        source: parentNode.id,
-        target: newNodeId,
-        type: 'smoothstep',
+      id: `${parentNode.id}-${newNodeId}`,
+      source: parentNode.id,
+      target: newNodeId,
+      type: 'smoothstep',
     };
     setEdges((eds) => eds.concat(newEdge));
   };
 
   const updateNodeData = (nodeId, data) => {
     setNodes(nds => nds.map(node => {
-        if (node.id === nodeId) {
-            return { ...node, data: { ...node.data, ...data } };
-        }
-        return node;
+      if (node.id === nodeId) {
+        return { ...node, data: { ...node.data, ...data } };
+      }
+      return node;
     }));
     setSelectedNode(prev => {
-        if(prev) {
-            return { ...prev, data: { ...prev.data, ...data } };
-        }
-        return null;
+      if (prev) {
+        return { ...prev, data: { ...prev.data, ...data } };
+      }
+      return null;
     });
   };
 
@@ -127,34 +190,41 @@ const App = () => {
     const nodeToDelete = nodes.find(n => n.id === nodeId);
     if (!nodeToDelete) return;
 
-    if (nodeToDelete.data.nodeType === 'root') {
-        alert('The Family Head cannot be deleted.');
-        return;
+    if (nodeToDelete.data.nodeType === NODE_TYPE.ROOT) {
+      alert('The Family Head cannot be deleted.');
+      return;
     }
 
     if (window.confirm('Are you sure you want to delete this node?')) {
-        const edgeChanges = edges.filter(e => e.source === nodeId || e.target === nodeId).map(edge => ({type: 'remove', id: edge.id}));
-        onEdgesChange(edgeChanges);
+      const edgeChanges = edges.filter(e => e.source === nodeId || e.target === nodeId).map(edge => ({ type: 'remove', id: edge.id }));
+      onEdgesChange(edgeChanges);
 
-        const nodeChange = {type: 'remove', id: nodeId};
-        onNodesChange([nodeChange]);
+      const nodeChange = { type: 'remove', id: nodeId };
+      onNodesChange([nodeChange]);
 
-        setNodes(nds => nds.filter(n => n.id !== nodeId));
+      setNodes(nds => nds.map(n => ({
+        ...n,
+        data: {
+          ...n.data,
+          spouseIds: n.data.spouseIds.filter(id => id !== nodeId),
+          childIds: n.data.childIds.filter(id => id !== nodeId),
+        }
+      })));
 
-        setSelectedNode(null);
+      setSelectedNode(null);
     }
   }
 
   const getCSVData = () => {
     return nodes.map(node => ({
-        id: node.id,
-        name: node.data.name,
-        imageUrl: node.data.imageUrl,
-        gender: node.data.gender,
-        nodeType: node.data.nodeType,
-        childOrder: node.data.childOrder,
-        parentId: node.data.parentId,
-        childIds: node.data.childIds ? node.data.childIds.join(';') : ''
+      id: node.id,
+      name: node.data.name,
+      imageUrl: node.data.imageUrl,
+      gender: node.data.gender,
+      nodeType: node.data.nodeType,
+      childOrder: node.data.childOrder,
+      parentId: node.data.parentId,
+      childIds: node.data.childIds ? node.data.childIds.join(';') : ''
     }));
   }
 
@@ -177,27 +247,45 @@ const App = () => {
           />
         </Col>
         <Col xs={4} className="bg-light p-4">
-            <h3 className="mb-4">Family Tree</h3>
-            <div className="mb-3">
-                <Button variant="info" onClick={() => addNode('spouse', 'female')} className="me-2" 
-                    disabled={!selectedNode || (selectedNode.data.nodeType !== 'root' && selectedNode.data.nodeType !== 'child')}>
-                    Add Spouse
+          <h3 className="mb-4">Family Tree</h3>
+          <div className="mb-3">
+            <Row className="mb-2">
+              <Col>
+                <Button variant="info" onClick={() => addNode(NODE_TYPE.SPOUSE, GENDER.FEMALE)} className="w-100"
+                  disabled={!selectedNode || (selectedNode.data.nodeType !== NODE_TYPE.ROOT && selectedNode.data.nodeType !== NODE_TYPE.CHILD)}>
+                  Add Spouse
                 </Button>
-                <Button variant="primary" onClick={() => addNode('child', 'male')} className="me-2" 
-                    disabled={!selectedNode || selectedNode.data.nodeType !== 'spouse'}>
-                    Add Son
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col>
+                <Button variant="primary" onClick={() => addNode(NODE_TYPE.CHILD, GENDER.MALE)} className="w-100"
+                  disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}>
+                  Add Son
                 </Button>
-                <Button variant="primary" onClick={() => addNode('child', 'female')} className="me-2" 
-                    disabled={!selectedNode || selectedNode.data.nodeType !== 'spouse'}>
-                    Add Daughter
+              </Col>
+              <Col>
+                <Button variant="primary" onClick={() => addNode(NODE_TYPE.CHILD, GENDER.FEMALE)} className="w-100"
+                  disabled={!selectedNode || selectedNode.data.nodeType !== NODE_TYPE.SPOUSE}>
+                  Add Daughter
                 </Button>
-                <CSVLink data={getCSVData()} filename={"family-tree.csv"} className="btn btn-success me-2">
-                    Export CSV
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col>
+                <CSVLink data={getCSVData()} filename={"family-tree.csv"} className="btn btn-success w-100">
+                  Export CSV
                 </CSVLink>
-                <Form.Group controlId="formFile" className="d-inline-block">
-                    <Form.Control type="file" onChange={importCSV} accept=".csv" />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Form.Group controlId="formFile">
+                  <Form.Control type="file" onChange={importCSV} accept=".csv" />
                 </Form.Group>
-            </div>
+              </Col>
+            </Row>
+          </div>
           <DetailsPanel selectedNode={selectedNode} updateNodeData={updateNodeData} deleteNode={deleteNode} />
         </Col>
       </Row>
