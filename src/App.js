@@ -15,6 +15,7 @@ import { NODE_TYPE, GENDER } from './constants';
 import { getLayoutedElements } from './utils/layout';
 
 const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [nodes, setNodes] = useState([
     { id: uuidv4(), type: 'custom', data: { name: 'Family Head', imageUrl: '', gender: GENDER.MALE, nodeType: NODE_TYPE.ROOT, childIds: [] }, position: { x: 250, y: 5 } }
   ]);
@@ -371,6 +372,7 @@ const App = () => {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            searchQuery={searchQuery}
           />
         </Col>
         <Col xs={4} className="bg-light p-4">
@@ -445,7 +447,7 @@ const App = () => {
               </Col>
             </Row>
           </div>
-          <DetailsPanel key={selectedNode ? selectedNode.id : 'no-node'} selectedNode={selectedNode} updateNodeData={updateNodeData} deleteNode={deleteNode} />
+          <DetailsPanel key={selectedNode ? selectedNode.id : 'no-node'} selectedNode={selectedNode} updateNodeData={updateNodeData} deleteNode={deleteNode} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         </Col>
       </Row>
     </Container>

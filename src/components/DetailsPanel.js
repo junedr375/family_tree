@@ -28,7 +28,7 @@ const getCroppedImg = (image, crop) => {
   return canvas.toDataURL('image/jpeg');
 };
 
-const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
+const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode, searchQuery, onSearchChange }) => {
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [childOrder, setChildOrder] = useState('');
@@ -85,12 +85,26 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
     }
   }, [completedCrop]);
 
-  if (!selectedNode) {
-    return <Card><Card.Body>Select a node to see details.</Card.Body></Card>;
-  }
-
   return (
-    <Card>
+    <>
+      <Card className="mb-3">
+        <Card.Header>Search</Card.Header>
+        <Card.Body>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder="Search by name"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </Form.Group>
+        </Card.Body>
+      </Card>
+
+      {!selectedNode ? (
+        <Card><Card.Body>Select a node to see details.</Card.Body></Card>
+      ) : (
+        <Card>
       <Card.Header>Edit Details</Card.Header>
       <Card.Body>
         <div className="text-center mb-3">
@@ -158,6 +172,8 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
         </Modal.Footer>
       </Modal>
     </Card>
+      )}
+    </>
   );
 };
 

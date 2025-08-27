@@ -11,6 +11,7 @@ const CrownIcon = () => (
 
 const CustomNode = ({ data, selected }) => {
   const isFamilyHead = data.nodeType === NODE_TYPE.ROOT;
+  const isHighlighted = data.isHighlighted;
 
   let cardBgColor = '#fff'; // Default white background
   if (data.nodeType === NODE_TYPE.SPOUSE) {
@@ -32,6 +33,7 @@ const CustomNode = ({ data, selected }) => {
     backgroundColor: cardBgColor, // Apply background color
     display: 'flex',
     flexDirection: 'column',
+    border: selected ? '2px solid blue' : (isHighlighted ? '2px solid red' : 'none'), // Highlight border
   };
 
   if (data.nodeType === NODE_TYPE.SPOUSE) {

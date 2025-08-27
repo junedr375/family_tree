@@ -4,10 +4,18 @@ import CustomNode from './CustomNode';
 
 const nodeTypes = { custom: CustomNode };
 
-const TreeView = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onNodeClick }) => {
+const TreeView = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, onNodeClick, searchQuery }) => {
+  const highlightedNodes = nodes.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      isHighlighted: searchQuery && node.data.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    },
+  }));
+
   return (
     <ReactFlow
-      nodes={nodes}
+      nodes={highlightedNodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
