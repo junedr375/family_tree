@@ -167,8 +167,11 @@ const TreeControls = ({
         </Row>
         <Row>
           <Col>
-            <Form.Group controlId="formFile">
-              <Form.Control type="file" onChange={importCSV} accept=".csv" />
+            <Form.Group controlId="formFile" className="mb-3">
+              <Form.Label className="btn btn-primary w-100">
+                Import CSV
+                <Form.Control type="file" onChange={importCSV} accept=".csv" hidden />
+              </Form.Label>
             </Form.Group>
           </Col>
         </Row>
