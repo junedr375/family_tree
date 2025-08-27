@@ -53,7 +53,9 @@ const CustomNode = ({ data, selected }) => {
       {data.childOrder && <Badge pill bg="info" style={{ position: 'absolute', top: '5px', left: '5px' }}>{data.childOrder}</Badge>}
       <div style={{ height: '70%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Image src={data.imageUrl || `https://avatar.iran.liara.run/public/${data.gender === GENDER.MALE ? 'boy' : 'girl'}`}
-          style={{ width: '95%', height: '95%', objectFit: 'fill', borderRadius: data.imageUrl ? '0' : '50%' }} />
+          style={
+            data.imageUrl ? { width: '100%', height: '100%', objectFit: 'fill', borderRadius: '0' }
+              : { width: '60%', height: '70%', objectFit: 'cover', borderRadius: '50%' }} />
       </div>
       <Card.Body className="text-center" style={{ height: '30%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px' }}>
         <Card.Title style={{ fontSize: '0.9rem', marginBottom: '0' }}>{data.name}</Card.Title>
