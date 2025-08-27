@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import {
   addEdge,
@@ -7,21 +8,14 @@ import {
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'reactflow/dist/style.css';
 import { Container, Row, Col, Button, Form } from 'react-bootstrap';
+import { v4 as uuidv4 } from 'uuid';
 import TreeView from './components/TreeView';
 import DetailsPanel from './components/DetailsPanel';
 import { CSVLink } from "react-csv";
 
-const generateUniqueRandomId = (existingIds) => {
-    let newId;
-    do {
-        newId = Math.floor(Math.random() * 1000000);
-    } while (existingIds.includes(newId));
-    return newId;
-}
-
 const App = () => {
   const [nodes, setNodes] = useState([
-    { id: generateUniqueRandomId([]), type: 'custom', data: { name: 'Family Head', imageUrl: '', spouseIds: [], childIds: [], gender: 'male', parentId: null, nodeType: 'child' }, position: { x: 250, y: 5 } }
+    { id: '1', type: 'custom', data: { name: 'Family Head', imageUrl: '', spouseIds: [], childIds: [], gender: 'male' }, position: { x: 250, y: 5 } }
   ]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -54,32 +48,23 @@ const App = () => {
     const parentNode = nodes.find(n => n.id === selectedNode.id);
     if (!parentNode) return;
 
-    if (type === 'child' && parentNode.data.spouseIds.length === 0) {
-        alert('Please add a spouse before adding children.');
-        return;
-    }
-
-    const existingIds = nodes.map(n => n.id);
-    const newNodeId = generateUniqueRandomId(existingIds);
+    const newNodeId = uuidv4();
     const genderName = gender === 'male' ? 'Son' : (gender === 'female' ? 'Daughter' : 'Spouse');
     const childCount = parentNode.data.childIds.length;
-    const spouseCount = parentNode.data.spouseIds.length;
 
     const newNode = {
       id: newNodeId,
       type: 'custom',
       data: { 
-          name: `New ${genderName}`, 
+          name: `New ${genderName}`,
           imageUrl: '', 
           spouseIds: type === 'spouse' ? [parentNode.id] : [], 
           childIds: [], 
           gender: gender, 
-          childOrder: type === 'child' ? childCount + 1 : null, 
-          parentId: type === 'child' ? parentNode.id : null,
-          nodeType: type
+          childOrder: type === 'child' ? childCount + 1 : null 
         },
       position: {
-        x: parentNode.position.x + (type === 'spouse' ? 250 + (spouseCount * 150) : 0),
+        x: parentNode.position.x + (type === 'spouse' ? 250 : 0),
         y: parentNode.position.y + (type === 'spouse' ? 0 : 150),
       },
     };
@@ -136,15 +121,14 @@ const App = () => {
 
   const deleteNode = (nodeId) => {
     if (!nodeId) return;
-    const nodeToDelete = nodes.find(n => n.id === nodeId);
-    if (!nodeToDelete) return;
-
-    if (nodeToDelete.data.parentId === null) {
+    if (nodeId === '1') {
         alert('The Family Head cannot be deleted.');
         return;
     }
-
     if (window.confirm('Are you sure you want to delete this node?')) {
+        const nodeToRemove = nodes.find(n => n.id === nodeId);
+        if (!nodeToRemove) return;
+
         const edgeChanges = edges.filter(e => e.source === nodeId || e.target === nodeId).map(edge => ({type: 'remove', id: edge.id}));
         onEdgesChange(edgeChanges);
 
@@ -174,9 +158,7 @@ const App = () => {
         x: node.position.x,
         y: node.position.y,
         gender: node.data.gender,
-        childOrder: node.data.childOrder,
-        parentId: node.data.parentId,
-        nodeType: node.data.nodeType
+        childOrder: node.data.childOrder
     }));
   }
 
@@ -190,18 +172,16 @@ const App = () => {
         const newNodes = lines.slice(1).map(line => {
             const values = line.split(',');
             const node = {
-                id: parseInt(values[0]),
+                id: values[0],
                 type: 'custom',
                 position: {x: parseFloat(values[5]), y: parseFloat(values[6])},
                 data: {
                     name: values[1],
                     imageUrl: values[2],
-                    spouseIds: values[3] ? values[3].split(';').map(id => parseInt(id)) : [],
-                    childIds: values[4] ? values[4].split(';').map(id => parseInt(id)) : [],
+                    spouseIds: values[3] ? values[3].split(';') : [],
+                    childIds: values[4] ? values[4].split(';') : [],
                     gender: values[7],
-                    childOrder: values[8] ? parseInt(values[8]) : null,
-                    parentId: values[9] ? parseInt(values[9]) : null,
-                    nodeType: values[10]
+                    childOrder: values[8] ? parseInt(values[8]) : null
                 }
             };
             return node;
@@ -242,10 +222,10 @@ const App = () => {
         <Col xs={4} className="bg-light p-4">
             <h3 className="mb-4">Family Tree</h3>
             <div className="mb-3">
-                <Button variant="primary" onClick={() => addNode('child', 'male')} className="me-2" disabled={!selectedNode || selectedNode.data.spouseIds.length === 0}>
+                <Button variant="primary" onClick={() => addNode('child', 'male')} className="me-2">
                     Add Son
                 </Button>
-                <Button variant="primary" onClick={() => addNode('child', 'female')} className="me-2" disabled={!selectedNode || selectedNode.data.spouseIds.length === 0}>
+                <Button variant="primary" onClick={() => addNode('child', 'female')} className="me-2">
                     Add Daughter
                 </Button>
                 <Button variant="info" onClick={() => addNode('spouse', 'spouse')} className="me-2">

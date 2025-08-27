@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Image } from 'react-bootstrap';
 
@@ -59,7 +58,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
           <Button variant="primary" onClick={handleUpdate} disabled={!selectedNode} className="me-2">
             Update
           </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.data.parentId === null}>
+          <Button variant="danger" onClick={handleDelete} disabled={!selectedNode || selectedNode.id === '1'}>
             Delete
           </Button>
         </Form>
