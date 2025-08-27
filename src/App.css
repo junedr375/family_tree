@@ -1,3 +1,4 @@
+
 body {
   font-family: sans-serif;
 }
@@ -24,8 +25,8 @@ body {
 }
 
 .img-preview {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     object-fit: cover;
     border-radius: 50%;
 }

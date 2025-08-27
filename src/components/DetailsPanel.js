@@ -41,7 +41,7 @@ const DetailsPanel = ({ selectedNode, updateNodeData, deleteNode }) => {
         <Card.Header>Edit Details</Card.Header>
       <Card.Body>
         <div className="text-center mb-3">
-            <Image src={imageUrl || (selectedNode.data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle fluid className='img-preview' />
+            <Image src={imageUrl || (selectedNode.data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle className='img-preview' style={{width: '40px', height: '40px'}} />
         </div>
         <Form>
           <Form.Group className="mb-3">
