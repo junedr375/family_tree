@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { Card, Image, Badge } from 'react-bootstrap';
@@ -10,7 +9,7 @@ const CrownIcon = () => (
     </svg>
 );
 
-const CustomNode = ({ data }) => {
+const CustomNode = ({ data, selected }) => {
   const isFamilyHead = data.nodeType === NODE_TYPE.ROOT;
   
   let cardBgColor = '#fff'; // Default white background

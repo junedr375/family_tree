@@ -4,7 +4,7 @@ import dagre from 'dagre';
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 120; // Approximate width of a node
+const nodeWidth = 200; // Approximate width of a node
 const nodeHeight = 180; // Approximate height of a node
 
 export const getLayoutedElements = (nodes, edges, direction = 'TB') => {
