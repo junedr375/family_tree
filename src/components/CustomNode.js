@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { Card, Image, Badge } from 'react-bootstrap';
@@ -35,7 +36,7 @@ const CustomNode = ({ data }) => {
     return (
       <Card style={cardStyle}>
         <Card.Body className="d-flex align-items-center p-2">
-          <Image src={data.imageUrl || (data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '40px', height: '40px', marginRight: '10px'}} />
+          <Image src={data.imageUrl || (data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '60px', height: '60px', marginRight: '10px'}} />
           <Card.Title style={{fontSize: '1rem', marginBottom: '0'}}>{data.name}</Card.Title>
         </Card.Body>
         <Handle type="target" position={Position.Top} />
@@ -49,7 +50,7 @@ const CustomNode = ({ data }) => {
         {isFamilyHead && <CrownIcon />}
         {data.childOrder && <Badge pill bg="info" style={{ position: 'absolute', top: '5px', left: '5px' }}>{data.childOrder}</Badge>}
         <Card.Body className="text-center">
-            <Image src={data.imageUrl || (data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '50px', height: '50px'}} className="mb-2" />
+            <Image src={data.imageUrl || (data.gender === GENDER.MALE ? 'https://avatar.iran.liara.run/public/boy' : 'https://avatar.iran.liara.run/public/girl')} roundedCircle style={{width: '70px', height: '70px'}} className="mb-2" />
             <Card.Title style={{fontSize: '1rem'}}>{data.name}</Card.Title>
         </Card.Body>
       <Handle type="target" position={Position.Top} />
