@@ -1,38 +1,32 @@
-.App {
+
+body {
+  font-family: sans-serif;
+}
+
+.react-flow__node-custom {
+  background: #fff;
+  border: 1px solid #1a192b;
+  border-radius: 5px;
+  padding: 10px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.react-flow__node.selected > .react-flow__node-custom {
+    border: 2px solid green;
+    box-shadow: 0 0 10px green;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+
+.react-flow__node-custom .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1a192b;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.img-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
 }
