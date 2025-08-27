@@ -92,7 +92,8 @@ const App = () => {
 
       // Prevent duplicate edges
       const edgeExists = edges.some(e =>
-        (e.source === connection.source && e.target === connection.target)
+        (e.source === connection.source && e.target === connection.target) ||
+        (e.source === connection.target && e.target === connection.source)
       );
       if (edgeExists) {
         alert("A connection already exists between these two nodes.");
@@ -222,16 +223,10 @@ const App = () => {
 
     let newNode;
     if (type === NODE_TYPE.SPOUSE) {
-      const spouseCount = nodes.filter(n => {
-        if (n.data.nodeType === NODE_TYPE.SPOUSE) {
-          const isConnectedToParent = edges.some(e =>
-            (e.source === parentNode.id && e.target === n.id) ||
-            (e.source === n.id && e.target === parentNode.id)
-          );
-          return isConnectedToParent;
-        }
-        return false;
-      }).length;
+      const spouseCount = nodes.filter(n => 
+        n.data.nodeType === NODE_TYPE.SPOUSE && 
+        n.data.parentId === parentNode.id
+      ).length;
       newNode = {
         id: newNodeId,
         type: 'custom',
@@ -241,6 +236,7 @@ const App = () => {
           gender: newSpouseGender,
           nodeType: NODE_TYPE.SPOUSE,
           childIds: [],
+          parentId: parentNode.id, // Assign parentId here
           spouseOrder: spouseCount + 1
         },
         position: {
